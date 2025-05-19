@@ -1,17 +1,33 @@
 <?php
+
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Genre {
-    public static function all()
+class Genre extends Model
+{
+    use HasFactory;
+
+    protected $fillable = ['name'];
+    
+    // HAPUS method all() yang di-override
+    // Biarkan Laravel menggunakan method all() default dari Eloquent
+    
+    // Jika ingin data default, buat method terpisah
+    public static function defaultGenres()
     {
         return [
-            ['id' => 1, 'name' => 'Fantasi'],
-            ['id' => 2, 'name' => 'Fiksi Ilmiah'],
-            ['id' => 3, 'name' => 'Romansa'],
-            ['id' => 4, 'name' => 'Misteri'],
-            ['id' => 5, 'name' => 'Horor']
+            ['name' => 'Fantasi'],
+            ['name' => 'Fiksi Ilmiah'],
+            ['name' => 'Romansa'],
+            ['name' => 'Misteri'],
+            ['name' => 'Horor']
         ];
+    }
+
+    public function books()
+    {
+        return $this->hasMany(Book::class);
     }
 }

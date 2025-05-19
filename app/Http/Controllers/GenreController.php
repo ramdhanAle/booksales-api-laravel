@@ -8,7 +8,7 @@ class GenreController extends Controller
 {
     public function index()
     {
-        $genres = Genre::all();
-        return view('genres.index', compact('genres'));
+    $genres = Book::select('genre')->distinct()->get();
+    return view('index', ['genres' => $genres]);
     }
 }
