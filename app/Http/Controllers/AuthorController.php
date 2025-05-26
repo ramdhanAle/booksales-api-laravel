@@ -15,17 +15,19 @@ class AuthorController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $authors]);
+            'data' => $authors
+        ]);
     }
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nama' => 'required|string|max:255',
-            'email' => 'required|email|unique:authors',
-            'bio' => 'required|string|max:255'
+            'name' => 'required|string',
+            'email' => 'required|email',
+            'bio' => 'nullable|string'
         ]);
 
         $authors = Author::create($validated);
+
         return response()->json([
             'success' => true,
             'data' => $authors

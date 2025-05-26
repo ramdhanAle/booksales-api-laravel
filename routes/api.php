@@ -15,6 +15,18 @@ Route::get('/', function () {
         'status' => 'running'
     ]);
 });
+
+// API Routes Group
+Route::middleware('api')->prefix('v1')->group(function () {
+    // Books Routes
+    Route::apiResource('books', BookController::class);
+    
+    // Genres Routes
+    Route::apiResource('genres', GenreController::class)->only(['index', 'store']);
+    
+    // Authors Routes
+    Route::apiResource('authors', AuthorController::class)->only(['index', 'store']);
+});
 // Route alternatif jika ingin tetap pakai closure
 /*
 Route::get('/', function () {
@@ -37,6 +49,7 @@ Route::get('/genres/{id}', [GenreController::class, 'show']);
 Route::post('/genres', [GenreController::class, 'store']);
 Route::put('/genres/{id}', [GenreController::class, 'update']);
 Route::delete('/genres/{id}', [GenreController::class, 'destroy']);
+Route::apiResource('genres', GenreController::class)->only(['index', 'store']);
 
 
 // authors
@@ -45,3 +58,4 @@ Route::get('/authors/{id}', [AuthorController::class, 'show']);
 Route::post('/authors', [AuthorController::class, 'store']);
 Route::put('/authors/{id}', [AuthorController::class, 'update']);
 Route::delete('/authors/{id}', [AuthorController::class, 'destroy']);
+Route::apiResource('authors', AuthorController::class)->only(['index', 'store']);

@@ -10,7 +10,7 @@ class GenreController extends Controller
 {
     public function index()
     {
-        $genres = Genre::withCount('books')->get();
+        $genres = Genre::all();
         return response()->json([
             'success' => true,
             'data' => $genres
@@ -20,12 +20,16 @@ class GenreController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'author_id' => 'required|exists:authors,id'
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string|max:255'
         ]);
 
-        $book = Book::create($validated);
-        return response()->json(['data' => $book], 201);
+        $genre = Genre::create($validated);
+
+        return response()->json([
+            'success' => true,
+            'data' => $genre
+        ], 201);
     }
 
     public function show($id)
