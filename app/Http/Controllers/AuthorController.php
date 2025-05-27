@@ -6,6 +6,8 @@ use App\Models\Genre;
 use App\Models\Author;
 use App\Models\Book;
 use Illuminate\Http\Request;
+use Illuminate\validation\ValidationException;
+use illuminate\Database\Eloquent\ModelNotFoundException;
 
 class AuthorController extends Controller
 {
@@ -34,33 +36,65 @@ class AuthorController extends Controller
         ], 201);
     }
 
-    public function show($id)
+    public function show(string $id)
     {
-        $book = Book::findOrFail($id);
-        return response()->json([
-            'success' => true,
-            'data' => $book]);
+        try {
+            $author = Author::findOrFail($id);
+            return response()->json([
+                'success' => true,
+                'data' => $author
+            ]);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Author not found'
+            ], 404);
+        }
     }
-
-    public function update(Request $request, $id)
+    public function update(Request $request, string $id)
     {
-        $book = Book::findOrFail($id);
-        
-        $validated = $request->validate([
-            'nama' => 'sometimes|string|max:255',
-            'email' => 'sometimes|email|unique:authors,email,' . $book->id,
-            'bio' => 'sometimes|string|max:255'
-        ]);
-
-        $book->update($validated);
-        return response()->json([
-            'success' => true,
-            'data' => $book]);
+        try {
+            $author = Author::findOrFail($id);
+            
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'email' => 'required|email|unique:authors,email,'.$id,
+                'bio' => 'nullable|string'
+            ]);
+            
+            $author->update($validated);
+            
+            return response()->json([
+                'success' => true,
+                'data' => $author
+            ]);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Author not found'
+            ], 404);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'errors' => $e->errors()
+            ], 422);
+        }
     }
-
-    public function destroy($id)
+    public function destroy(string $id)
     {
-        Book::findOrFail($id)->delete();
-        return response()->json(null, 204);
+        try {
+            $author = Author::findOrFail($id);
+            $author->delete();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Author deleted successfully'
+            ]);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Author not found'
+            ], 404);
+        }
     }
 }

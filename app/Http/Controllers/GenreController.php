@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Genre;
 use App\Models\Book;
 use Illuminate\Http\Request;
+use illuminate\Validation\ValidationException;
+use illuminate\Database\Eloquent\ModelNotFoundException;
 
 class GenreController extends Controller
 {
@@ -32,28 +34,66 @@ class GenreController extends Controller
         ], 201);
     }
 
-    public function show($id)
+    public function show(string $id)
     {
-        $book = Book::findOrFail($id);
-        return response()->json(['data' => $book]);
+        try {
+            $genre = Genre::findOrFail($id);
+            return response()->json([
+                'success' => true,
+                'data' => $genre
+            ]);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Genre not found'
+            ], 404);
+        }
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, string $id)
     {
-        $book = Book::findOrFail($id);
-        
-        $validated = $request->validate([
-            'title' => 'sometimes|string|max:255',
-            'author_id' => 'sometimes|exists:authors,id'
-        ]);
-
-        $book->update($validated);
-        return response()->json(['data' => $book]);
+        try {
+            $genre = Genre::findOrFail($id);
+            
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'description' => 'nullable|string'
+            ]);
+            
+            $genre->update($validated);
+            
+            return response()->json([
+                'success' => true,
+                'data' => $genre
+            ]);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Genre not found'
+            ], 404);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'errors' => $e->errors()
+            ], 422);
+        }
     }
 
-    public function destroy($id)
+   public function destroy(string $id)
     {
-        Book::findOrFail($id)->delete();
-        return response()->json(null, 204);
+        try {
+            $genre = Genre::findOrFail($id);
+            $genre->delete();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Genre deleted successfully'
+            ]);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Genre not found'
+            ], 404);
+        }
     }
 }
