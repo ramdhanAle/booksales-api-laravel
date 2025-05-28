@@ -5,10 +5,18 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\GenreController;
 use App\Http\Controllers\AuthorController;
 use App\Http\Controllers\BookController;
-use App\Models\Genre;
-use App\Models\Author;
 
-// Route utama dengan data dari controller
+/* 
+|--------------------------------------------------------------------------
+| API Routes
+|--------------------------------------------------------------------------
+|
+| Berikut implementasi routing sesuai instruksi:
+| - Read All (index) dan Show bisa diakses publik
+| - Create, Update, Destroy hanya untuk admin
+*/
+
+// Route utama
 Route::get('/', function () {
     return response()->json([
         'app' => 'BookSales API',
@@ -17,46 +25,33 @@ Route::get('/', function () {
     ]);
 });
 
-// API Routes Group
-Route::middleware('api')->prefix('v1')->group(function () {
-    // Books Routes
-    Route::apiResource('books', BookController::class);
+// API Version 1 Routes
+Route::prefix('v1')->group(function () {
+    // Public Routes (No Authentication Needed)
+    Route::get('/authors', [AuthorController::class, 'index']);
+    Route::get('/authors/{id}', [AuthorController::class, 'show']);
     
-    // Genres Routes
-    Route::apiResource('genres', GenreController::class)->only(['index', 'store']);
+    Route::get('/genres', [GenreController::class, 'index']);
+    Route::get('/genres/{id}', [GenreController::class, 'show']);
     
-    // Authors Routes
-    Route::apiResource('authors', AuthorController::class)->only(['index', 'store']);
+    Route::get('/books', [BookController::class, 'index']);
+    Route::get('/books/{id}', [BookController::class, 'show']);
+
+    // Protected Routes (Admin Only)
+    Route::middleware(['auth:api', 'role:admin'])->group(function () {
+        // Author Admin Routes
+        Route::post('/authors', [AuthorController::class, 'store']);
+        Route::put('/authors/{id}', [AuthorController::class, 'update']);
+        Route::delete('/authors/{id}', [AuthorController::class, 'destroy']);
+        
+        // Genre Admin Routes
+        Route::post('/genres', [GenreController::class, 'store']);
+        Route::put('/genres/{id}', [GenreController::class, 'update']);
+        Route::delete('/genres/{id}', [GenreController::class, 'destroy']);
+
+        // Book Admin Routes
+        Route::post('/books', [BookController::class, 'store']);
+        Route::put('/books/{id}', [BookController::class, 'update']);
+        Route::delete('/books/{id}', [BookController::class, 'destroy']);
+    });
 });
-// Route alternatif jika ingin tetap pakai closure
-/*
-Route::get('/', function () {
-    $genres = Genre::withCount('books')->get();
-    $authors = Author::withCount('books')->get();
-    return view('welcome', compact('genres', 'authors'));
-});
-*/
-
-// books
-Route::get('/books', [BookController::class, 'index']);
-Route::get('/books/{id}', [BookController::class, 'show']);
-Route::post('/books', [BookController::class, 'store']);
-Route::put('/books/{id}', [BookController::class, 'update']);
-Route::delete('/books/{id}', [BookController::class, 'destroy']);
-
-// genres
-Route::get('/genres', [GenreController::class, 'index']);
-Route::get('/genres/{id}', [GenreController::class, 'show']);
-Route::post('/genres', [GenreController::class, 'store']);
-Route::put('/genres/{id}', [GenreController::class, 'update']);
-Route::delete('/genres/{id}', [GenreController::class, 'destroy']);
-Route::apiResource('genres', GenreController::class)->only(['index', 'store']);
-
-
-// authors
-Route::get('/authors', [AuthorController::class, 'index']); 
-Route::get('/authors/{id}', [AuthorController::class, 'show']);
-Route::post('/authors', [AuthorController::class, 'store']);
-Route::put('/authors/{id}', [AuthorController::class, 'update']);
-Route::delete('/authors/{id}', [AuthorController::class, 'destroy']);
-Route::apiResource('authors', AuthorController::class)->only(['index', 'store']);
